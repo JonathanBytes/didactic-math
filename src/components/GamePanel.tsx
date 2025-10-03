@@ -73,7 +73,7 @@ const GamePanel = ({ config }: GamePanelProps) => {
       </header>
 
       {/* Main Game Area - Two Columns */}
-      <div className="flex-1 grid grid-cols-2 gap-4 p-4">
+      <div className="flex-1 grid grid-cols-[1fr_2fr] gap-4 p-4">
         {/* Columna Izquierda - Número a descomponer */}
         <div className="flex items-center justify-center">
           <Card className="p-8 w-full max-w-md">
