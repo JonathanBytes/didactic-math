@@ -1,50 +1,124 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+Version change: (none) → 1.0.0
+Modified principles: (initial ratification – none renamed)
+Added sections: Core Principles (6), Additional Engineering Constraints, Development Workflow & Quality Gates, Governance
+Removed sections: None
+Templates requiring updates:
+	✅ .specify/templates/plan-template.md (version reference updated)
+	✅ .specify/templates/spec-template.md (no direct references – validated)
+	✅ .specify/templates/tasks-template.md (no direct references – validated)
+Follow-up TODOs: None
+-->
+
+# Didactic Math Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### 1. Code Quality Discipline (NON-NEGOTIABLE)
+Rules:
+- Every change MUST be covered by at least one automated test (unit, integration, or visual where appropriate) before merging.
+- No PR may introduce an ESLint or TypeScript error; new warnings MUST be resolved or converted to explicit suppressions with rationale.
+- Red → Green → Refactor: functionality added only after a failing test exists; refactors MUST retain green status.
+- Dead, duplicated, or commented-out code MUST be removed in the same PR it is discovered.
+- Public APIs (exported components/functions) REQUIRE inline JSDoc/TSDoc including purpose, props/params, and constraints.
+Rationale: Enforces a sustainable velocity where correctness and clarity compound instead of decaying.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### 2. Component-Based Architecture
+Rules:
+- UI MUST be composed of small, pure, prop-driven React components (no side effects in render paths).
+- Shared logic extracted into hooks (`useX`) or utility modules; NO duplicated domain logic across components.
+- Each component MUST declare a single responsibility; multi-purpose components MUST be split.
+- Cross-cutting concerns (theme, accessibility helpers, state containers) centralized; avoid ad-hoc context proliferation.
+- Directory co-location: component + styles + tests + story/usage example in same folder when created.
+Rationale: Predictable composition reduces cognitive load and enables incremental enhancement and reuse.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### 3. Educational UX First
+Rules:
+- Every interactive element MUST convey mathematical intent: labels, aria descriptions, or inline hints explain concepts—not just mechanics.
+- Progressive disclosure: advanced or distracting details are hidden until user signals readiness (e.g., expanders, toggles).
+- Explanatory feedback: incorrect inputs trigger constructive guidance (what was wrong + next hint), never silent failure.
+- Visualizations MUST include textual equivalents (captions or summaries) to reinforce learning modalities.
+- Any new feature proposal MUST state the learning outcome it advances; PR description MUST link outcome to implementation.
+Rationale: The product’s differentiator is pedagogy; learning clarity outweighs feature breadth.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### 4. Type Safety & Static Guarantees
+Rules:
+- All source files are `.ts` / `.tsx`; `any` is forbidden unless explicitly justified with a `// @justified-any: <reason>` comment and a narrowing TODO.
+- Public functions/components MUST export precise types—no implicit `any`, broad `unknown`, or structural leaking of internal types.
+- Runtime validation (e.g., zod / custom guards) REQUIRED at all external boundaries (user input, network, storage) with typed refinement.
+- Generic types used where domain invariants vary (e.g., `<T extends NumericNode>`); avoid copy-paste specialization.
+- Build MUST fail on TypeScript errors; no `skipLibCheck` compromises unless documented in Governance exceptions.
+Rationale: Strong static guarantees front-load correctness and reduce ambiguous runtime states.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### 5. Consistent User Experience
+Rules:
+- Design tokens (spacing, color, typography, motion) centralized; components consume tokens—no raw magic values in JSX/CSS.
+- Interaction patterns (focus handling, keyboard navigation, error display) standardized; new patterns require documented approval.
+- Component variants documented (story or MDX) before widespread use.
+- Empty and loading states MUST be explicitly designed (skeletons or descriptive placeholders) – no layout shift flash.
+- Accessibility: Every interactive component MUST pass WCAG 2.1 AA for color contrast and keyboard operability.
+Rationale: Consistency builds user trust and accelerates development by shrinking decision surfaces.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### 6. Performance & Accessibility (Lightweight, Responsive, Inclusive)
+Rules:
+- Initial JS payload (uncompressed) MUST stay under 200 KB for core learner path; additions require budget trade-off doc.
+- Route-level code splitting mandatory for feature modules beyond core learning flow.
+- p95 route-to-interactive < 150ms on a simulated modern mid-tier laptop; regressions require performance issue filed.
+- All interactive elements reachable via keyboard and announce meaningful roles/names via ARIA where native semantics insufficient.
+- Image/media assets MUST declare dimensions to avoid layout shift; prefer vector/SVG for math diagrams when feasible.
+- Continuous measurement: add or update a lightweight performance check when introducing a new heavy dependency.
+Rationale: Fast, accessible experiences keep learners engaged and reduce cognitive friction.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+## Additional Engineering Constraints
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+1. Tooling: React + TypeScript + Vite is the sanctioned stack; introducing a new build or state management framework requires governance approval.
+2. Testing Pyramid: ~60% unit/hook tests, 30% integration/component tests, 10% high-level interaction/visual tests.
+3. Linting & Formatting: ESLint + Prettier (or equivalent config) enforced pre-commit; CI blocks merges on violations.
+4. Source Layout: `src/` contains domain-driven groupings (e.g., `components/`, `hooks/`, `math/`, `state/`); avoid deep nesting > 5 levels.
+5. Dependency Hygiene: New third-party library requires: (a) problem statement, (b) size impact, (c) maintenance risk note. Lightweight internal utility preferred if simpler.
+6. Documentation: Every feature merged MUST update or create a usage example / story demonstrating educational context.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Development Workflow & Quality Gates
+
+1. Branch Flow: Feature branches named `<issue|ticket>-<kebab-summary>`; squash merge after review.
+2. Mandatory PR Checklist:
+	 - Tests added & green
+	 - No unexplained `any`
+	 - Accessibility check performed (tab order + screen reader labels)
+	 - Performance budget evaluated (bundle diff shown if > +5 KB)
+	 - Learning outcome referenced
+3. Review Gate: At least one reviewer focuses on pedagogy clarity, another on implementation quality (can be the same if expertise overlaps, but both dimensions MUST be explicitly acknowledged in comments or approvals).
+4. CI Gates (all MUST pass): type check, lint, test suite, bundle size delta check, accessibility smoke (axe or equivalent), performance smoke (Lighthouse or scripted metric on core route).
+5. Refactor Safety: Behavior-preserving refactors require unchanged or expanded test coverage; removal of code requires confirmation of absence of live references (search + optionally build artifact scan).
+6. Incident Handling: Regressions in performance or accessibility open a blocking issue labeled `quality-regression` before unrelated merges.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+Authority & Supremacy:
+- This constitution supersedes informal practices; conflicts resolved in favor of the stricter applicable rule.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Amendment Process:
+1. Draft change PR referencing rationale (performance pressure, new domain need, recurring friction, etc.).
+2. Classify bump: MAJOR (incompatible removal/overhaul), MINOR (new principle/section or materially expanded rule), PATCH (clarification).
+3. Include migration or adoption notes for MAJOR and MINOR changes.
+4. Update version line and Sync Impact Report at file top.
+5. Obtain two approvals: one domain (education focus) + one engineering.
+
+Compliance & Review:
+- PR reviewers MUST map comments to principle numbers when blocking.
+- CI MAY include automated constitution checks (e.g., scanning for `any`, bundle size budgets, a11y violations) – failing checks block merges.
+- Quarterly (or sooner if 3+ PATCH changes accumulate) review to consolidate clarifications into a MINOR if cohesive.
+
+Exceptions:
+- Temporary deviations require an issue labeled `constitution-exception` with scope, expiry date, and rollback plan.
+- Expired exceptions auto-trigger a blocking label until resolved.
+
+Versioning Policy:
+- Semantic: MAJOR.MINOR.PATCH as defined above.
+- `LAST_AMENDED_DATE` updated on any version bump; `RATIFICATION_DATE` immutable after initial adoption.
+
+Record Keeping:
+- Each amendment PR must link to prior version diff for auditability.
+
+**Version**: 1.0.0 | **Ratified**: 2025-10-03 | **Last Amended**: 2025-10-03
