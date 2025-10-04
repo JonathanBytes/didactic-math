@@ -92,10 +92,6 @@ bun preview
 
 Las contribuciones son bienvenidas.
 
-## 📄 Licencia
-
-Este proyecto es de código abierto y está disponible bajo la licencia MIT.
-
 ## 👨‍💻 Autor
 
 **Jonathan Bytes**
