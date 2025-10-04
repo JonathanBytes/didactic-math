@@ -84,7 +84,7 @@ const ResultPanel = ({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-50 p-8">
+    <div className="h-screen w-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-50 p-4 md:p-8 overflow-auto" style={{ height: '100dvh' }}>
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-center text-gray-800">

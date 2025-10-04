@@ -85,14 +85,14 @@ const GeneratorBase = ({
   color: string;
 }) => {
   return (
-    <div className="flex flex-col items-center gap-2 opacity-50">
+    <div className="flex flex-col items-center gap-1 sm:gap-2 opacity-50">
       <div
-        className="w-16 h-16 rounded-lg flex items-center justify-center font-bold text-white shadow-lg"
+        className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center font-bold text-white shadow-lg text-sm sm:text-base"
         style={{ backgroundColor: color }}
       >
         {label.charAt(0)}
       </div>
-      <span className="text-xs font-medium text-gray-600">{label}</span>
+      <span className="text-[10px] sm:text-xs font-medium text-gray-600">{label}</span>
     </div>
   );
 };
@@ -104,7 +104,8 @@ const GeneratorTile = ({
   color,
   type,
   containerRef,
-  onDrop
+  onDrop,
+  generatorRef
 }: {
   id: string;
   label: string;
@@ -112,9 +113,19 @@ const GeneratorTile = ({
   type: ValueType;
   containerRef: React.RefObject<HTMLDivElement | null>;
   onDrop: (id: string, type: ValueType, zone: 1 | 2) => void;
+  generatorRef: React.RefObject<HTMLDivElement | null>;
 }) => {
   const [zIndex, setZIndex] = useState(100);
   const figureRef = useRef<HTMLDivElement>(null);
+  const [initialPos, setInitialPos] = useState<{ x: number; y: number } | null>(null);
+
+  // Calcular posición inicial basada en el generador
+  useEffect(() => {
+    if (generatorRef.current) {
+      const rect = generatorRef.current.getBoundingClientRect();
+      setInitialPos({ x: rect.left, y: rect.top });
+    }
+  }, [generatorRef]);
 
   const updateZIndex = () => {
     const els = document.querySelectorAll(".drag-tile");
@@ -171,7 +182,9 @@ const GeneratorTile = ({
       onDragEnd={handleDragEnd}
       drag
       dragConstraints={containerRef}
-      dragElastic={0.65}
+      dragElastic={0.05}
+      dragMomentum={false}
+      dragTransition={{ bounceStiffness: 300, bounceDamping: 20 }}
       initial={{ scale: 0, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ 
@@ -182,20 +195,22 @@ const GeneratorTile = ({
       }}
       style={{ 
         zIndex,
-        position: 'absolute',
-        top: 0,
-        left: 0
+        position: 'fixed',
+        top: initialPos?.y ?? 0,
+        left: initialPos?.x ?? 0,
+        pointerEvents: 'auto',
+        visibility: initialPos ? 'visible' : 'hidden'
       }}
-      className="drag-tile cursor-grab active:cursor-grabbing"
+      className="drag-tile cursor-grab active:cursor-grabbing touch-none"
     >
-      <div className="flex flex-col items-center gap-2 pointer-events-none">
+      <div className="flex flex-col items-center gap-1 sm:gap-2 pointer-events-none">
         <div
-          className="w-16 h-16 rounded-lg flex items-center justify-center font-bold text-white shadow-lg"
+          className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg flex items-center justify-center font-bold text-white shadow-lg text-sm sm:text-base"
           style={{ backgroundColor: color }}
         >
           {label.charAt(0)}
         </div>
-        <span className="text-xs font-medium text-gray-600">{label}</span>
+        <span className="text-[10px] sm:text-xs font-medium text-gray-600">{label}</span>
       </div>
     </motion.div>
   );
@@ -381,45 +396,36 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
   return (
     <div 
       ref={containerRef}
-      className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-50 relative overflow-hidden"
+      className="h-screen w-screen flex flex-col bg-gradient-to-br from-blue-50 to-purple-50 relative"
+      style={{ height: '100dvh', overflow: 'hidden' }}
     >
-      {/* Header */}
-      <header className="p-4 bg-white shadow-sm">
-        <h1 className="text-2xl font-bold text-center text-gray-800">
-          Matemática Didáctica
-        </h1>
-        <p className="text-sm text-center text-gray-600 mt-1">
-          {isShowingFirstNumber ? "Primer número" : "Segundo número"}
-        </p>
-      </header>
-
       {/* Main Game Area - Two Columns */}
-      <div className="flex-1 grid grid-cols-[1fr_2fr] gap-4 p-4">
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_2fr] p-2 sm:p-0 overflow-hidden">
         {/* Columna Izquierda - Número a descomponer */}
-        <div className="flex items-center justify-center">
-          <Card className="p-8 w-full max-w-md">
-            <div className="text-center space-y-4">
-              <h2 className="text-lg font-semibold text-gray-700">
+        <div className="flex items-center justify-center p-2">
+          <Card className="p-4 sm:p-8 w-full">
+            <div className="text-center">
+              <h2 className="text-sm sm:text-lg font-semibold text-gray-700 mb-2">
                 Número a descomponer
               </h2>
-              <div className="text-8xl font-bold text-blue-600">
+              <div className="text-4xl sm:text-6xl font-bold text-blue-600 my-2">
                 {currentNumber}
               </div>
-              <p className="text-sm text-gray-500">
-                Arrastra las figuras a la zona {isShowingFirstNumber ? "1 (morada)" : "2 (rosa)"}
+              <p className="text-xs sm:text-sm text-gray-500">
+                Arrastra las fichas a la zona {isShowingFirstNumber ? "1 (morada)" : "2 (rosa)"}
               </p>
             </div>
           </Card>
         </div>
 
         {/* Columna Derecha - Área de trabajo */}
-        <div className="flex flex-col gap-6 p-4">
+        <div className="flex flex-col gap-2 sm:gap-6 p-2 sm:p-4 overflow-auto h-full">
           {/* Figuras de valores (Unidades, Decenas, Centenas, Miles) - Generadores estáticos */}
-          <div className="bg-white rounded-lg p-6 shadow-md">
-            <h3 className="text-lg font-semibold text-gray-700 mb-4 text-center">
+          <div className="bg-white rounded-lg p-1 sm:p-2 shadow-md flex-shrink-0">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2 text-center">
               Valores disponibles (Arrastra las fichas)
             </h3>
-            <div className="flex justify-around gap-4">
+            <div className="flex justify-center gap-1 sm:gap-2">
               <div ref={generatorUnidadesRef} className="relative">
                 <GeneratorBase label="Unidades" color="#10b981" />
                 <GeneratorTile
@@ -429,6 +435,7 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
                   color="#10b981"
                   type="unidades"
                   containerRef={containerRef}
+                  generatorRef={generatorUnidadesRef}
                   onDrop={handleTileDrop}
                 />
               </div>
@@ -441,6 +448,7 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
                   color="#3b82f6"
                   type="decenas"
                   containerRef={containerRef}
+                  generatorRef={generatorDecenasRef}
                   onDrop={handleTileDrop}
                 />
               </div>
@@ -453,6 +461,7 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
                   color="#f59e0b"
                   type="centenas"
                   containerRef={containerRef}
+                  generatorRef={generatorCentenasRef}
                   onDrop={handleTileDrop}
                 />
               </div>
@@ -465,6 +474,7 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
                   color="#ef4444"
                   type="miles"
                   containerRef={containerRef}
+                  generatorRef={generatorMilesRef}
                   onDrop={handleTileDrop}
                 />
               </div>
@@ -472,19 +482,19 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
           </div>
 
           {/* Rectángulos de destino (dos colores diferentes) */}
-          <div className="flex-1 flex justify-center items-end gap-4">
+          <div className="flex-1 flex flex-col sm:flex-row justify-center items-stretch gap-2 sm:gap-4 min-h-0">
             <DropZone 
               id="drop-zone-1"
               color="#8b5cf6" 
               label="Zona 1" 
-              className="w-full h-full" 
+              className="w-full flex-1 min-h-[120px]" 
               values={zone1Values}
             />
             <DropZone 
               id="drop-zone-2"
               color="#ec4899" 
               label="Zona 2" 
-              className="w-full h-full" 
+              className="w-full flex-1 min-h-[120px]" 
               values={zone2Values}
             />
           </div>

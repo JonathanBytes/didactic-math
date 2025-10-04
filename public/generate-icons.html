@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon Generator</title>
+</head>
+
+<body>
+  <h1>Generador de Iconos para PWA</h1>
+  <p>Este archivo generará los iconos necesarios para la PWA.</p>
+  <p>Instrucciones:</p>
+  <ol>
+    <li>Abre este archivo en un navegador</li>
+    <li>Haz clic en los botones para descargar cada icono</li>
+    <li>Guarda los archivos en la carpeta /public</li>
+  </ol>
+
+  <canvas id="canvas" style="display: none;"></canvas>
+
+  <div style="margin: 20px 0;">
+    <button id="generate192">Generar icon-192.png</button>
+    <button id="generate512">Generar icon-512.png</button>
+  </div>
+
+  <script>
+    // SVG básico para el icono (puedes reemplazarlo con tu logo.svg)
+    const svgString = `
+        <svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+            <rect width="512" height="512" fill="#3b82f6" rx="80"/>
+            <text x="256" y="320" font-family="Arial, sans-serif" font-size="200" font-weight="bold" fill="white" text-anchor="middle">M</text>
+        </svg>
+        `;
+
+    function generateIcon(size) {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = size;
+      canvas.height = size;
+
+      const img = new Image();
+      const svgBlob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(svgBlob);
+
+      img.onload = function () {
+        ctx.drawImage(img, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+
+        canvas.toBlob(function (blob) {
+          const link = document.createElement('a');
+          link.download = `icon-${size}.png`;
+          link.href = URL.createObjectURL(blob);
+          link.click();
+        });
+      };
+
+      img.src = url;
+    }
+
+    document.getElementById('generate192').addEventListener('click', () => generateIcon(192));
+    document.getElementById('generate512').addEventListener('click', () => generateIcon(512));
+  </script>
+</body>
+
+</html>
