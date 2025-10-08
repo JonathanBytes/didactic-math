@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { motion } from "motion/react";
 import toast from "react-hot-toast";
+import confetti from "canvas-confetti";
 
 type NumberMode = "random" | "predefined";
 
@@ -355,6 +356,38 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
     return values.filter(v => v.type === type).length;
   };
 
+  // Función para lanzar confeti
+  const launchConfetti = useCallback(() => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+    const randomInRange = (min: number, max: number) => {
+      return Math.random() * (max - min) + min;
+    };
+
+    const interval = window.setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      });
+    }, 250);
+  }, []);
+
   const checkCompletion = useCallback(() => {
     // No verificar si no está inicializado o si el número es 0
     if (!isInitialized || currentNumber === 0) return;
@@ -387,16 +420,19 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
         setCurrentNumber(nextNumber);
         setIsShowingFirstNumber(false);
       } else {
-        // Juego completado - llamar a onGameComplete con todos los datos
-        onGameComplete({
-          number1: originalNumber1,
-          number2: originalNumber2,
-          zone1Values,
-          zone2Values
-        });
+        // Juego completado - lanzar confeti y llamar a onGameComplete
+        launchConfetti();
+        setTimeout(() => {
+          onGameComplete({
+            number1: originalNumber1,
+            number2: originalNumber2,
+            zone1Values,
+            zone2Values
+          });
+        }, 500); // Pequeño delay para que se vea el confeti antes de cambiar de pantalla
       }
     }
-  }, [zone1Values, zone2Values, isShowingFirstNumber, currentNumber, nextNumber, isInitialized, onGameComplete, originalNumber1, originalNumber2]);
+  }, [zone1Values, zone2Values, isShowingFirstNumber, currentNumber, nextNumber, isInitialized, onGameComplete, originalNumber1, originalNumber2, launchConfetti]);
 
   useEffect(() => {
     checkCompletion();
