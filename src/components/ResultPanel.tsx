@@ -102,13 +102,13 @@ const ResultPanel = ({
         </h2>
         <div className="flex justify-center gap-8 items-center">
           <div className="text-center">
-            <span className="text-sm text-gray-500">Zona 1</span>
-            <div className="text-6xl font-bold text-purple-600">{number1}</div>
+            <span className="text-xs text-gray-500">Zona 1</span>
+            <div className="text-5xl font-bold text-purple-600">{number1}</div>
           </div>
           <div className="text-4xl text-gray-400">+</div>
           <div className="text-center">
-            <span className="text-sm text-gray-500">Zona 2</span>
-            <div className="text-6xl font-bold text-pink-600">{number2}</div>
+            <span className="text-xs text-gray-500">Zona 2</span>
+            <div className="text-5xl font-bold text-pink-600">{number2}</div>
           </div>
         </div>
       </Card>
