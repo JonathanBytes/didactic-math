@@ -59,30 +59,34 @@ const DropZone = ({
       <span className="text-lg font-semibold mb-2" style={{ color: displayColor }}>
         {label}
       </span>
-      {values.length > 0 && (
-        <div className="space-y-1 text-center">
-          {countByType("miles") > 0 && (
-            <div className="text-sm text-gray-600">
-              Miles: {countByType("miles")}
-            </div>
-          )}
-          {countByType("centenas") > 0 && (
-            <div className="text-sm text-gray-600">
-              Centenas: {countByType("centenas")}
-            </div>
-          )}
-          {countByType("decenas") > 0 && (
-            <div className="text-sm text-gray-600">
-              Decenas: {countByType("decenas")}
-            </div>
-          )}
-          {countByType("unidades") > 0 && (
-            <div className="text-sm text-gray-600">
-              Unidades: {countByType("unidades")}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Siempre mostrar el contenedor de contadores para evitar layout shift */}
+      <div className="space-y-1 text-center min-h-[100px] flex flex-col justify-center">
+        {countByType("miles") > 0 && (
+          <div className="text-sm text-gray-600">
+            Miles: {countByType("miles")}
+          </div>
+        )}
+        {countByType("centenas") > 0 && (
+          <div className="text-sm text-gray-600">
+            Centenas: {countByType("centenas")}
+          </div>
+        )}
+        {countByType("decenas") > 0 && (
+          <div className="text-sm text-gray-600">
+            Decenas: {countByType("decenas")}
+          </div>
+        )}
+        {countByType("unidades") > 0 && (
+          <div className="text-sm text-gray-600">
+            Unidades: {countByType("unidades")}
+          </div>
+        )}
+        {values.length === 0 && (
+          <div className="text-sm text-gray-400 italic">
+            Arrastra aquí
+          </div>
+        )}
+      </div>
     </Card>
   );
 };
