@@ -426,29 +426,16 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
               Valores disponibles (Arrastra las fichas)
             </h3>
             <div className="flex justify-center gap-1 sm:gap-2">
-              <div ref={generatorUnidadesRef} className="relative">
-                <GeneratorBase label="Unidades" color="#10b981" />
+              <div ref={generatorMilesRef} className="relative">
+                <GeneratorBase label="Miles" color="#ef4444" />
                 <GeneratorTile
-                  key={activeTiles.unidades}
-                  id={activeTiles.unidades}
-                  label="Unidades"
-                  color="#10b981"
-                  type="unidades"
+                  key={activeTiles.miles}
+                  id={activeTiles.miles}
+                  label="Miles"
+                  color="#ef4444"
+                  type="miles"
                   containerRef={containerRef}
-                  generatorRef={generatorUnidadesRef}
-                  onDrop={handleTileDrop}
-                />
-              </div>
-              <div ref={generatorDecenasRef} className="relative">
-                <GeneratorBase label="Decenas" color="#3b82f6" />
-                <GeneratorTile
-                  key={activeTiles.decenas}
-                  id={activeTiles.decenas}
-                  label="Decenas"
-                  color="#3b82f6"
-                  type="decenas"
-                  containerRef={containerRef}
-                  generatorRef={generatorDecenasRef}
+                  generatorRef={generatorMilesRef}
                   onDrop={handleTileDrop}
                 />
               </div>
@@ -465,16 +452,29 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
                   onDrop={handleTileDrop}
                 />
               </div>
-              <div ref={generatorMilesRef} className="relative">
-                <GeneratorBase label="Miles" color="#ef4444" />
+              <div ref={generatorDecenasRef} className="relative">
+                <GeneratorBase label="Decenas" color="#3b82f6" />
                 <GeneratorTile
-                  key={activeTiles.miles}
-                  id={activeTiles.miles}
-                  label="Miles"
-                  color="#ef4444"
-                  type="miles"
+                  key={activeTiles.decenas}
+                  id={activeTiles.decenas}
+                  label="Decenas"
+                  color="#3b82f6"
+                  type="decenas"
                   containerRef={containerRef}
-                  generatorRef={generatorMilesRef}
+                  generatorRef={generatorDecenasRef}
+                  onDrop={handleTileDrop}
+                />
+              </div>
+              <div ref={generatorUnidadesRef} className="relative">
+                <GeneratorBase label="Unidades" color="#10b981" />
+                <GeneratorTile
+                  key={activeTiles.unidades}
+                  id={activeTiles.unidades}
+                  label="Unidades"
+                  color="#10b981"
+                  type="unidades"
+                  containerRef={containerRef}
+                  generatorRef={generatorUnidadesRef}
                   onDrop={handleTileDrop}
                 />
               </div>
