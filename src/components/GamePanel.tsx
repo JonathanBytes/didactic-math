@@ -29,23 +29,34 @@ const DropZone = ({
   label, 
   className, 
   id,
-  values 
+  values,
+  isActive = true
 }: { 
   color: string; 
   label: string;
   className?: string;
   id: string;
   values: Array<{ type: ValueType }>;
+  isActive?: boolean;
 }) => {
   const countByType = (type: ValueType) => values.filter(v => v.type === type).length;
+  
+  // Estilos cuando está desactivada
+  const inactiveColor = '#9ca3af'; // gray-400
+  const displayColor = isActive ? color : inactiveColor;
+  const opacity = isActive ? 1 : 0.5;
   
   return (
     <Card
       id={id}
-      className={`flex flex-col items-center justify-center border-2 border-dashed transition-all hover:border-solid ${className}`}
-      style={{ borderColor: color, backgroundColor: `${color}15` }}
+      className={`flex flex-col items-center justify-center border-2 border-dashed transition-all ${isActive ? 'hover:border-solid' : 'cursor-not-allowed'} ${className}`}
+      style={{ 
+        borderColor: displayColor, 
+        backgroundColor: `${displayColor}15`,
+        opacity
+      }}
     >
-      <span className="text-lg font-semibold mb-2" style={{ color }}>
+      <span className="text-lg font-semibold mb-2" style={{ color: displayColor }}>
         {label}
       </span>
       {values.length > 0 && (
@@ -489,6 +500,7 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
               label="Zona 1" 
               className="w-full flex-1 min-h-[120px]" 
               values={zone1Values}
+              isActive={isShowingFirstNumber}
             />
             <DropZone 
               id="drop-zone-2"
@@ -496,6 +508,7 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
               label="Zona 2" 
               className="w-full flex-1 min-h-[120px]" 
               values={zone2Values}
+              isActive={!isShowingFirstNumber}
             />
           </div>
         </div>
