@@ -50,40 +50,41 @@ const DropZone = ({
   return (
     <Card
       id={id}
-      className={`flex flex-col items-center justify-center border-2 border-dashed transition-all ${isActive ? 'hover:border-solid' : 'cursor-not-allowed'} ${className}`}
+      className={`flex flex-col items-center justify-start border-2 border-dashed transition-all ${isActive ? 'hover:border-solid' : 'cursor-not-allowed'} ${className}`}
       style={{ 
         borderColor: displayColor, 
         backgroundColor: `${displayColor}15`,
-        opacity
+        opacity,
+        padding: 'clamp(0.25rem, 1vmin, 0.75rem)'
       }}
     >
-      <span className="text-lg font-semibold mb-2" style={{ color: displayColor }}>
+      <span className="text-xs sm:text-base font-semibold mb-1 sm:mb-2 flex-shrink-0" style={{ color: displayColor }}>
         {label}
       </span>
       {/* Siempre mostrar el contenedor de contadores para evitar layout shift */}
-      <div className="space-y-1 text-center min-h-[100px] flex flex-col justify-center">
+      <div className="space-y-0.5 sm:space-y-1 text-center min-h-[60px] sm:min-h-[80px] flex flex-col justify-start overflow-auto w-full">
         {countByType("miles") > 0 && (
-          <div className="text-sm text-gray-600">
+          <div className="text-[10px] sm:text-xs text-gray-600">
             Miles: {countByType("miles")}
           </div>
         )}
         {countByType("centenas") > 0 && (
-          <div className="text-sm text-gray-600">
+          <div className="text-[10px] sm:text-xs text-gray-600">
             Centenas: {countByType("centenas")}
           </div>
         )}
         {countByType("decenas") > 0 && (
-          <div className="text-sm text-gray-600">
+          <div className="text-[10px] sm:text-xs text-gray-600">
             Decenas: {countByType("decenas")}
           </div>
         )}
         {countByType("unidades") > 0 && (
-          <div className="text-sm text-gray-600">
+          <div className="text-[10px] sm:text-xs text-gray-600">
             Unidades: {countByType("unidades")}
           </div>
         )}
         {values.length === 0 && (
-          <div className="text-sm text-gray-400 italic">
+          <div className="text-[10px] sm:text-xs text-gray-400 italic">
             Arrastra aquí
           </div>
         )}
@@ -451,18 +452,18 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
       style={{ height: '100dvh', overflow: 'hidden' }}
     >
       {/* Main Game Area - Two Columns */}
-      <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_2fr] p-2 sm:p-0 overflow-hidden">
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2 overflow-hidden" style={{ padding: 'clamp(0.25rem, 1vmin, 0.5rem)' }}>
         {/* Columna Izquierda - Número a descomponer */}
-        <div className="flex items-center justify-center p-2">
-          <Card className="p-4 sm:p-8 w-full">
+        <div className="flex items-center justify-center min-h-0">
+          <Card className="p-2 sm:p-4 w-full">
             <div className="text-center">
-              <h2 className="text-sm sm:text-lg font-semibold text-gray-700 mb-2">
+              <h2 className="text-xs sm:text-base font-semibold text-gray-700 mb-1 sm:mb-2">
                 Número a descomponer
               </h2>
-              <div className="text-4xl sm:text-6xl font-bold text-blue-600 my-2">
+              <div className="text-3xl sm:text-5xl font-bold text-blue-600 my-1 sm:my-2">
                 {currentNumber}
               </div>
-              <p className="text-xs sm:text-sm text-gray-500">
+              <p className="text-[10px] sm:text-xs text-gray-500">
                 Arrastra las fichas a la zona {isShowingFirstNumber ? "1 (morada)" : "2 (rosa)"}
               </p>
             </div>
@@ -470,11 +471,11 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
         </div>
 
         {/* Columna Derecha - Área de trabajo */}
-        <div className="flex flex-col gap-2 sm:gap-6 p-2 sm:p-4 overflow-auto h-full">
+        <div className="flex flex-col gap-2 sm:gap-4 overflow-hidden min-h-0">
           {/* Figuras de valores (Unidades, Decenas, Centenas, Miles) - Generadores estáticos */}
           <div className="bg-white rounded-lg p-1 sm:p-2 shadow-md flex-shrink-0">
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2 text-center">
-              Valores disponibles (Arrastra las fichas)
+            <h3 className="text-[10px] sm:text-xs font-semibold text-gray-700 mb-1 text-center">
+              Valores disponibles
             </h3>
             <div className="flex justify-center gap-1 sm:gap-2">
               <div ref={generatorMilesRef} className="relative">
@@ -533,12 +534,12 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
           </div>
 
           {/* Rectángulos de destino (dos colores diferentes) */}
-          <div className="flex-1 flex flex-col sm:flex-row justify-center items-stretch gap-2 sm:gap-4 min-h-0">
+          <div className="flex-1 flex flex-col sm:flex-row justify-center items-stretch gap-2 sm:gap-4 min-h-0 overflow-hidden">
             <DropZone 
               id="drop-zone-1"
               color="#8b5cf6" 
               label="Zona 1" 
-              className="w-full flex-1 min-h-[120px]" 
+              className="w-full flex-1 min-h-[80px]" 
               values={zone1Values}
               isActive={isShowingFirstNumber}
             />
@@ -546,7 +547,7 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
               id="drop-zone-2"
               color="#ec4899" 
               label="Zona 2" 
-              className="w-full flex-1 min-h-[120px]" 
+              className="w-full flex-1 min-h-[80px]" 
               values={zone2Values}
               isActive={!isShowingFirstNumber}
             />

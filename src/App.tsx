@@ -1,5 +1,6 @@
 import SetupPanel from "./components/SetupPanel"
 import GamePanel from "./components/GamePanel"
+import ConversionPanel from "./components/ConversionPanel"
 import ResultPanel from "./components/ResultPanel"
 import { useState } from "react"
 import { Toaster } from "react-hot-toast"
@@ -21,7 +22,7 @@ interface GameResult {
 }
 
 function App() {
-  const [currentPanel, setCurrentPanel] = useState<'setup' | 'game' | 'result'>('setup');
+  const [currentPanel, setCurrentPanel] = useState<'setup' | 'game' | 'conversion' | 'result'>('setup');
   const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   const [gameResult, setGameResult] = useState<GameResult | null>(null);
 
@@ -32,6 +33,32 @@ function App() {
 
   const handleGameComplete = (result: GameResult) => {
     setGameResult(result);
+    
+    // Combinar todos los valores de ambas zonas
+    const allValues = [...result.zone1Values, ...result.zone2Values];
+    
+    // Contar por tipo
+    const countByType = (type: ValueType) => 
+      allValues.filter((v) => v.type === type).length;
+    
+    // Verificar si necesita conversión (cualquier tipo excepto miles tiene 10+ fichas)
+    const needsConversion = 
+      countByType("unidades") > 9 || 
+      countByType("decenas") > 9 || 
+      countByType("centenas") > 9;
+    
+    setCurrentPanel(needsConversion ? 'conversion' : 'result');
+  };
+
+  const handleConversionComplete = (finalValues: Array<{ type: ValueType }>) => {
+    // Actualizar el resultado con los valores convertidos
+    if (gameResult) {
+      setGameResult({
+        ...gameResult,
+        zone1Values: finalValues.slice(0, Math.ceil(finalValues.length / 2)),
+        zone2Values: finalValues.slice(Math.ceil(finalValues.length / 2)),
+      });
+    }
     setCurrentPanel('result');
   };
 
@@ -54,6 +81,21 @@ function App() {
     return (
       <>
         <GamePanel config={gameConfig} onGameComplete={handleGameComplete} />
+        <Toaster position="top-center" />
+      </>
+    )
+  }
+
+  if (currentPanel === 'conversion' && gameResult) {
+    // Combinar todos los valores para el panel de conversión
+    const allValues = [...gameResult.zone1Values, ...gameResult.zone2Values];
+    
+    return (
+      <>
+        <ConversionPanel 
+          allValues={allValues}
+          onConversionComplete={handleConversionComplete}
+        />
         <Toaster position="top-center" />
       </>
     )
