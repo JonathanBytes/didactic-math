@@ -1,4 +1,6 @@
-const CACHE_VERSION = 'v2';
+const DEFAULT_VERSION = 'dev';
+const { searchParams } = new URL(self.location.href);
+const CACHE_VERSION = searchParams.get('version') || DEFAULT_VERSION;
 const CACHE_NAME = `matematica-didactica-${CACHE_VERSION}`;
 const PRECACHE_URLS = ['/', '/index.html', '/manifest.json'];
 
