@@ -1,20 +1,12 @@
-const CACHE_NAME = 'matematica-didactica-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/src/main.tsx',
-  '/src/App.tsx',
-  '/src/index.css',
-];
+const CACHE_VERSION = 'v2';
+const CACHE_NAME = `matematica-didactica-${CACHE_VERSION}`;
+const PRECACHE_URLS = ['/', '/index.html', '/manifest.json'];
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
+      .then((cache) => cache.addAll(PRECACHE_URLS))
       .catch((error) => {
         console.log('Cache install failed:', error);
       })
@@ -24,32 +16,48 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Cache hit - return response
-        if (response) {
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  const request = event.request;
+
+  // Network-first for navigations (HTML)
+  const isNavigationRequest =
+    request.mode === 'navigate' ||
+    (request.headers.get('accept') || '').includes('text/html');
+
+  if (isNavigationRequest) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
           return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Cache-first for other GET requests
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      return fetch(request).then((networkResponse) => {
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+          return networkResponse;
         }
-        return fetch(event.request).then(
-          (response) => {
-            // Check if valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
 
-            // Clone the response
-            const responseToCache = response.clone();
+        const copy = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
 
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          }
-        );
-      })
+        return networkResponse;
+      });
+    })
   );
 });
 
