@@ -1,8 +1,34 @@
 const DEFAULT_VERSION = 'dev';
+const CACHE_PREFIX = 'matematica-didactica';
 const { searchParams } = new URL(self.location.href);
 const CACHE_VERSION = searchParams.get('version') || DEFAULT_VERSION;
-const CACHE_NAME = `matematica-didactica-${CACHE_VERSION}`;
+const CACHE_NAME = `${CACHE_PREFIX}-${CACHE_VERSION}`;
 const PRECACHE_URLS = ['/', '/index.html', '/manifest.json'];
+
+const matchCurrentCache = async (request) => {
+  const cache = await caches.open(CACHE_NAME);
+  return cache.match(request);
+};
+
+const putInCurrentCache = async (request, response) => {
+  if (!response || response.status !== 200 || (response.type !== 'basic' && response.type !== 'cors')) {
+    return;
+  }
+
+  const requestUrl = new URL(request.url);
+  if (requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  const cache = await caches.open(CACHE_NAME);
+  await cache.put(request, response);
+};
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
 // Install event - cache resources
 self.addEventListener('install', (event) => {
@@ -24,58 +50,63 @@ self.addEventListener('fetch', (event) => {
 
   const request = event.request;
 
+  const handleNetworkFirst = async () => {
+    try {
+      const response = await fetch(request);
+      await putInCurrentCache(request, response.clone());
+      return response;
+    } catch (error) {
+      const cachedResponse = await matchCurrentCache(request);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      throw error;
+    }
+  };
+
   // Network-first for navigations (HTML)
   const isNavigationRequest =
     request.mode === 'navigate' ||
     (request.headers.get('accept') || '').includes('text/html');
 
   if (isNavigationRequest) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
+    event.respondWith(handleNetworkFirst());
     return;
   }
 
   // Cache-first for other GET requests
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
+    caches.open(CACHE_NAME).then(async (cache) => {
+      const cachedResponse = await cache.match(request);
       if (cachedResponse) {
         return cachedResponse;
       }
 
-      return fetch(request).then((networkResponse) => {
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-          return networkResponse;
-        }
-
-        const copy = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-
+      try {
+        const networkResponse = await fetch(request);
+        await putInCurrentCache(request, networkResponse.clone());
         return networkResponse;
-      });
+      } catch (error) {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        throw error;
+      }
     })
   );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    (async () => {
+      const cacheNames = await caches.keys();
+      const deletions = cacheNames
+        .filter((cacheName) => cacheName.startsWith(CACHE_PREFIX) && cacheName !== CACHE_NAME)
+        .map((cacheName) => caches.delete(cacheName));
+
+      await Promise.all(deletions);
+      await self.clients.claim();
+    })()
   );
-  self.clients.claim();
 });
