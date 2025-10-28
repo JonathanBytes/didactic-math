@@ -40,7 +40,7 @@ const SetupPanel = ({ onStartGame }: SetupPanelProps) => {
     <div className="flex items-center justify-center h-screen w-screen p-4 overflow-auto" style={{ height: '100dvh' }}>
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl">Configuración del Juego</CardTitle>
+          <CardTitle className="text-2xl">Configuración del Juego didáctico</CardTitle>
           <CardDescription>
             Elige cómo quieres comenzar tu partida
           </CardDescription>
