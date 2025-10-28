@@ -50,7 +50,7 @@ const DropZone = ({
   return (
     <Card
       id={id}
-      className={`flex flex-col items-center justify-start border-2 border-dashed transition-all ${isActive ? 'hover:border-solid' : 'cursor-not-allowed'} ${className}`}
+      className={`flex h-full flex-col items-center justify-start border-2 border-dashed transition-all ${isActive ? 'hover:border-solid' : 'cursor-not-allowed'} ${className}`}
       style={{ 
         borderColor: displayColor, 
         backgroundColor: `${displayColor}15`,
@@ -452,9 +452,12 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
       style={{ height: '100dvh', overflow: 'hidden' }}
     >
       {/* Main Game Area - Two Columns */}
-      <div className="flex-1 grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2 overflow-hidden" style={{ padding: 'clamp(0.25rem, 1vmin, 0.5rem)' }}>
+      <div
+        className="flex-1 grid grid-cols-1 grid-rows-[auto_1fr] sm:grid-cols-[1fr_2fr] sm:grid-rows-1 gap-2 overflow-hidden"
+        style={{ padding: 'clamp(0.25rem, 1vmin, 0.5rem)' }}
+      >
         {/* Columna Izquierda - Número a descomponer */}
-        <div className="flex items-center justify-center min-h-0">
+  <div className="flex items-center justify-center min-h-0">
           <Card className="p-2 sm:p-4 w-full">
             <div className="text-center">
               <h2 className="text-xs sm:text-base font-semibold text-gray-700 mb-1 sm:mb-2">
@@ -471,7 +474,7 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
         </div>
 
         {/* Columna Derecha - Área de trabajo */}
-        <div className="flex flex-col gap-2 sm:gap-4 overflow-hidden min-h-0">
+  <div className="flex flex-col gap-2 sm:gap-4 overflow-hidden min-h-0">
           {/* Figuras de valores (Unidades, Decenas, Centenas, Miles) - Generadores estáticos */}
           <div className="bg-white rounded-lg p-1 sm:p-2 shadow-md flex-shrink-0">
             <h3 className="text-[10px] sm:text-xs font-semibold text-gray-700 mb-1 text-center">
@@ -539,7 +542,7 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
               id="drop-zone-1"
               color="#8b5cf6" 
               label="Zona 1" 
-              className="w-full flex-1 min-h-[80px]" 
+              className="w-full flex-1 min-h-[120px]" 
               values={zone1Values}
               isActive={isShowingFirstNumber}
             />
@@ -547,7 +550,7 @@ const GamePanel = ({ config, onGameComplete }: GamePanelProps) => {
               id="drop-zone-2"
               color="#ec4899" 
               label="Zona 2" 
-              className="w-full flex-1 min-h-[80px]" 
+              className="w-full flex-1 min-h-[120px]" 
               values={zone2Values}
               isActive={!isShowingFirstNumber}
             />
