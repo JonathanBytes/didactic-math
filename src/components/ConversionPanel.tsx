@@ -6,6 +6,26 @@ import confetti from "canvas-confetti";
 
 type ValueType = "unidades" | "decenas" | "centenas" | "miles";
 
+const COLOR_MAP: Record<ValueType, string> = {
+  unidades: "#10b981",
+  decenas: "#3b82f6",
+  centenas: "#f59e0b",
+  miles: "#ef4444",
+};
+
+const LABEL_MAP: Record<ValueType, string> = {
+  unidades: "Unidades",
+  decenas: "Decenas",
+  centenas: "Centenas",
+  miles: "Miles",
+};
+
+const CONVERTIBLE_TYPES: Array<Exclude<ValueType, "miles">> = [
+  "unidades",
+  "decenas",
+  "centenas",
+];
+
 interface ConversionPanelProps {
   allValues: Array<{ type: ValueType }>;
   onConversionComplete: (finalValues: Array<{ type: ValueType }>) => void;
@@ -190,11 +210,14 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
   // Fichas acumuladas en la zona de conversión, agrupadas por tipo
   const [conversionZoneValues, setConversionZoneValues] = useState<Array<{ type: ValueType }>>([]);
 
+  const countInConversionZone = useCallback(
+    (type: ValueType) => conversionZoneValues.filter((v) => v.type === type).length,
+    [conversionZoneValues],
+  );
+
   // Verificar si necesita conversión
   const needsConversion = useCallback(() => {
-    return (
-      counts.unidades > 9 || counts.decenas > 9 || counts.centenas > 9
-    );
+    return CONVERTIBLE_TYPES.some((type) => counts[type] > 9);
   }, [counts]);
 
   // Manejar cuando se suelta una ficha en la zona de conversión
@@ -202,6 +225,18 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
     // Verificar si aún quedan fichas de este tipo
     if (counts[type] <= 0) {
       toast.error('No quedan más fichas de este tipo', { duration: 2000 });
+      return;
+    }
+
+    if (type === 'miles') {
+      toast.error('Las fichas de miles ya representan el valor máximo disponible', { duration: 2500 });
+      return;
+    }
+
+    const availableForConversion = counts[type] + countInConversionZone(type);
+
+    if (availableForConversion < 10) {
+      toast.error(`Necesitas 10 ${LABEL_MAP[type]} para convertir`, { duration: 2500 });
       return;
     }
     
@@ -258,14 +293,8 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
 
   // Verificar si hay 10 fichas del mismo tipo en la zona de conversión
   useEffect(() => {
-    const countInZone = (type: ValueType) => 
-      conversionZoneValues.filter((v) => v.type === type).length;
-    
-    // Verificar cada tipo (excepto miles)
-    const types: Array<"unidades" | "decenas" | "centenas"> = ["unidades", "decenas", "centenas"];
-    
-    for (const type of types) {
-      const count = countInZone(type);
+    for (const type of CONVERTIBLE_TYPES) {
+      const count = countInConversionZone(type);
       if (count >= 10) {
         // Realizar conversión automática
         const sets = Math.floor(count / 10);
@@ -300,7 +329,7 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
           [nextType]: newTileId
         }));
         
-        toast.success(`¡Convertido! ${sets} ${type} → ${sets} ${nextType}`, {
+        toast.success(`¡Convertido! ${sets} ${LABEL_MAP[type]} → ${sets} ${LABEL_MAP[nextType]}`, {
           duration: 2000,
         });
         
@@ -308,7 +337,7 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
         break;
       }
     }
-  }, [conversionZoneValues]);
+  }, [conversionZoneValues, countInConversionZone]);
 
   // Verificar si se completó la conversión (todos los contadores < 10 excepto miles)
   useEffect(() => {
@@ -328,25 +357,6 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
       }, 1000);
     }
   }, [counts, conversionZoneValues.length, needsConversion, onConversionComplete, launchConfetti]);
-
-  const colors = {
-    unidades: "#10b981",
-    decenas: "#3b82f6",
-    centenas: "#f59e0b",
-    miles: "#ef4444",
-  };
-
-  const labels = {
-    unidades: "Unidades",
-    decenas: "Decenas",
-    centenas: "Centenas",
-    miles: "Miles",
-  };
-  
-  // Contar fichas en la zona de conversión por tipo
-  const countInConversionZone = (type: ValueType) => 
-    conversionZoneValues.filter((v) => v.type === type).length;
-
   return (
     <div
       ref={containerRef}
@@ -374,13 +384,13 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
             </h3>
             <div className="flex justify-center gap-0.5 sm:gap-1 items-end flex-shrink-0">
               <div ref={generatorMilesRef} className="relative">
-                <GeneratorBase label={labels.miles} color={colors.miles} count={counts.miles} />
+                <GeneratorBase label={LABEL_MAP.miles} color={COLOR_MAP.miles} count={counts.miles} />
                 {counts.miles > 0 && (
                   <DraggableTile
                     key={activeTiles.miles}
                     id={activeTiles.miles}
-                    label={labels.miles}
-                    color={colors.miles}
+                    label={LABEL_MAP.miles}
+                    color={COLOR_MAP.miles}
                     type="miles"
                     containerRef={containerRef}
                     generatorRef={generatorMilesRef}
@@ -389,13 +399,13 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
                 )}
               </div>
               <div ref={generatorCentenasRef} className="relative">
-                <GeneratorBase label={labels.centenas} color={colors.centenas} count={counts.centenas} />
+                <GeneratorBase label={LABEL_MAP.centenas} color={COLOR_MAP.centenas} count={counts.centenas} />
                 {counts.centenas > 0 && (
                   <DraggableTile
                     key={activeTiles.centenas}
                     id={activeTiles.centenas}
-                    label={labels.centenas}
-                    color={colors.centenas}
+                    label={LABEL_MAP.centenas}
+                    color={COLOR_MAP.centenas}
                     type="centenas"
                     containerRef={containerRef}
                     generatorRef={generatorCentenasRef}
@@ -404,13 +414,13 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
                 )}
               </div>
               <div ref={generatorDecenasRef} className="relative">
-                <GeneratorBase label={labels.decenas} color={colors.decenas} count={counts.decenas} />
+                <GeneratorBase label={LABEL_MAP.decenas} color={COLOR_MAP.decenas} count={counts.decenas} />
                 {counts.decenas > 0 && (
                   <DraggableTile
                     key={activeTiles.decenas}
                     id={activeTiles.decenas}
-                    label={labels.decenas}
-                    color={colors.decenas}
+                    label={LABEL_MAP.decenas}
+                    color={COLOR_MAP.decenas}
                     type="decenas"
                     containerRef={containerRef}
                     generatorRef={generatorDecenasRef}
@@ -419,13 +429,13 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
                 )}
               </div>
               <div ref={generatorUnidadesRef} className="relative">
-                <GeneratorBase label={labels.unidades} color={colors.unidades} count={counts.unidades} />
+                <GeneratorBase label={LABEL_MAP.unidades} color={COLOR_MAP.unidades} count={counts.unidades} />
                 {counts.unidades > 0 && (
                   <DraggableTile
                     key={activeTiles.unidades}
                     id={activeTiles.unidades}
-                    label={labels.unidades}
-                    color={colors.unidades}
+                    label={LABEL_MAP.unidades}
+                    color={COLOR_MAP.unidades}
                     type="unidades"
                     containerRef={containerRef}
                     generatorRef={generatorUnidadesRef}
@@ -453,24 +463,24 @@ const ConversionPanel = ({ allValues, onConversionComplete }: ConversionPanelPro
             {conversionZoneValues.length > 0 && (
               <div className="mt-0.5 space-y-0.5">
                 {countInConversionZone("miles") > 0 && (
-                  <div className="text-[10px] sm:text-xs font-semibold" style={{ color: colors.miles }}>
+                  <div className="text-[10px] sm:text-xs font-semibold" style={{ color: COLOR_MAP.miles }}>
                     Miles: {countInConversionZone("miles")}
                   </div>
                 )}
                 {countInConversionZone("centenas") > 0 && (
-                  <div className="text-[10px] sm:text-xs font-semibold" style={{ color: colors.centenas }}>
+                  <div className="text-[10px] sm:text-xs font-semibold" style={{ color: COLOR_MAP.centenas }}>
                     Centenas: {countInConversionZone("centenas")}
                     {countInConversionZone("centenas") >= 10 && " ✓"}
                   </div>
                 )}
                 {countInConversionZone("decenas") > 0 && (
-                  <div className="text-[10px] sm:text-xs font-semibold" style={{ color: colors.decenas }}>
+                  <div className="text-[10px] sm:text-xs font-semibold" style={{ color: COLOR_MAP.decenas }}>
                     Decenas: {countInConversionZone("decenas")}
                     {countInConversionZone("decenas") >= 10 && " ✓"}
                   </div>
                 )}
                 {countInConversionZone("unidades") > 0 && (
-                  <div className="text-[10px] sm:text-xs font-semibold" style={{ color: colors.unidades }}>
+                  <div className="text-[10px] sm:text-xs font-semibold" style={{ color: COLOR_MAP.unidades }}>
                     Unidades: {countInConversionZone("unidades")}
                     {countInConversionZone("unidades") >= 10 && " ✓"}
                   </div>
