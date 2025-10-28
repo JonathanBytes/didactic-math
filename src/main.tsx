@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import appPackage from '../package.json' assert { type: 'json' }
+import appPackage from '../package.json' with { type: 'json' }
 import './index.css'
 import App from './App.tsx'
 
